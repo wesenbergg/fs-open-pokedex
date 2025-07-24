@@ -8,9 +8,6 @@ on:
     branches: [main]
     types: [opened, synchronize]
 
-env:
-  SKIP_DEPLOY: ${{ contains(github.event.commits.*.message, '#skip') || contains(github.event.pull_request.title, '#skip') }}
-
 jobs:
   simple_deployment_pipeline:
     runs-on: ubuntu-latest
@@ -41,6 +38,7 @@ jobs:
           headed: false
 
   fly_deploy:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '#skip') }}
     needs: simple_deployment_pipeline
     name: Deploy app to Fly.io
     runs-on: ubuntu-latest
@@ -51,3 +49,17 @@ jobs:
       - run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  tag_release:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '#skip') }}
+    needs: fly_deploy
+    name: Tag Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: "write"
+    steps:
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.64.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: minor
