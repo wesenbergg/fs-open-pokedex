@@ -1,0 +1,36 @@
+# fly.toml app configuration file generated for fs-open-pokedex-snowy-bird-6194 on 2025-07-24T21:39:00+03:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'fs-open-pokedex-snowy-bird-6194'
+primary_region = 'arn'
+
+[build]
+
+[processes]
+  app = "node app.js" # add this
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+  [http_service.http_checks]
+    interval = "50s"
+    grace_period = "5s"
+    method = "get"
+    path = "/health"
+    protocol = "http"
+    timeout = "5s"
+
+[deploy]
+  strategy = "canary"
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
