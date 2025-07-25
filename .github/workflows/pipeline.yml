@@ -75,19 +75,50 @@ jobs:
     needs: [simple_deployment_pipeline, fly_deploy, tag_release]
     name: Discord Notification
     runs-on: ubuntu-latest
+    if: always()
     steps:
-      - name: Notify Success
+      - name: Send Success Notification
         if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        uses: rjstone/discord-webhook-notify@v2
-        with:
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          severity: info
-          details: All tests passed! by wesenbergg
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+          -d '{
+            "embeds": [{
+              "title": "Deployment Successful",
+              "description": "New version of pokedex available.",
+              "color": 5814783,
+              "fields": [
+                {
+                  "name": "Repository",
+                  "value": "${{ github.repository }}",
+                  "inline": true
+                }
+              ],
+              "footer": {
+                "text": "Deployed by ${{ github.actor }}"
+              }
+            }]
+          }' \
+          ${{ secrets.DISCORD_WEBHOOK }}
 
-      - name: Notify Failure
+      - name: Send Failure Notification
         if: failure()
-        uses: rjstone/discord-webhook-notify@v2
-        with:
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          severity: error
-          details: Pipeline failed! by wesenbergg
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+          -d '{
+            "embeds": [{
+              "title": "Pipeline Failed",
+              "description": "The deployment pipeline has failed.",
+              "color": 15158332,
+              "fields": [
+                {
+                  "name": "Repository",
+                  "value": "${{ github.repository }}",
+                  "inline": true
+                }
+              ],
+              "footer": {
+                "text": "Deployed by ${{ github.actor }}"
+              }
+            }]
+          }' \
+          ${{ secrets.DISCORD_WEBHOOK }}
