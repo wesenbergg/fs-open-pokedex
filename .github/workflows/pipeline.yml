@@ -70,3 +70,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: minor
+
+  discord_notification:
+    needs: [simple_deployment_pipeline, fly_deploy, tag_release]
+    name: Discord Notification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Success
+        if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: rjstone/discord-webhook-notify@v2
+        with:
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          severity: info
+          details: All tests passed! by wesenbergg
+
+      - name: Notify Failure
+        if: failure()
+        uses: rjstone/discord-webhook-notify@v2
+        with:
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          severity: error
+          details: Pipeline failed! by wesenbergg
