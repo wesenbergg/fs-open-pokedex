@@ -9,7 +9,7 @@ primary_region = 'arn'
 [build]
 
 [processes]
-  app = "node app.js" # add this
+  app = "node app.js"
 
 [http_service]
   internal_port = 3000
