@@ -28,7 +28,7 @@ primary_region = 'arn'
     timeout = "5s"
 
 [deploy]
-  strategy = "canary"
+  strategy = "rolling"
 
 [[vm]]
   memory = '1gb'

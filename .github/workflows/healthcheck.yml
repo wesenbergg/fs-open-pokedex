@@ -1,0 +1,21 @@
+name: Health Check Workflow
+on:
+  # For testing purpose:
+  # This workflow runs on pushes to the main branch and on a daily schedule
+  # push:
+  #   branches:
+  #     - main
+  schedule:
+    - cron: "0 0 * * *" # Runs daily at midnight UTC
+
+jobs:
+  healthcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the deployed service URL
+        uses: jtalk/url-health-check-action@v4
+        with:
+          url: https://fs-open-pokedex-snowy-bird-6194.fly.dev/health
+          follow-redirect: false # Optional, defaults to "false"
+          max-attempts: 3 # Optional, defaults to 1
+          retry-delay: 5s # Optional, only applicable to max-attempts > 1
